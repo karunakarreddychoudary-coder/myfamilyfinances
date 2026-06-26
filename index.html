@@ -33,8 +33,6 @@
         /* Cards */
         .card { background: var(--card-bg); padding: 18px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.04); border-left: 5px solid var(--primary); }
         .card.excellent { border-left-color: var(--success); }
-        .card.income { border-left-color: var(--success); }
-        .card.expense { border-left-color: var(--danger); }
         .card.savings { border-left-color: var(--info); }
         
         .card h3 { font-size: 0.85rem; text-transform: uppercase; color: #718096; margin-bottom: 5px; }
@@ -80,28 +78,28 @@
         <div class="card savings">
             <h3>Net Monthly Cash Balance</h3>
             <div class="value" id="net-savings" style="color: var(--info);">₹0</div>
-            <div class="subtext">Available after all EMIs are cleared</div>
+            <div class="subtext">Available after all EMIs/Interest are cleared</div>
         </div>
     </div>
 
     <div class="grid-2">
         <div>
-            <h2>💰 Monthly Inflows (Income)</h2>
+            <h2>💰 Monthly Inflows (Income / Credits)</h2>
             <div class="table-container">
                 <table>
                     <thead>
-                        <tr><th>Earner</th><th>Source</th><th>Amount</th></tr>
+                        <tr><th>Recipient</th><th>Source Name</th><th>Amount</th></tr>
                     </thead>
                     <tbody id="income-table-body"></tbody>
                 </table>
             </div>
         </div>
         <div>
-            <h2>📉 Fixed Monthly Outflows (EMIs)</h2>
+            <h2>📉 Fixed Monthly Outflows (EMIs & Interest)</h2>
             <div class="table-container">
                 <table>
                     <thead>
-                        <tr><th>Borrower</th><th>Lender</th><th>EMI Due</th><th>Progress</th></tr>
+                        <tr><th>Borrower</th><th>Lender / Vendor</th><th>Monthly Payout</th><th>Type</th></tr>
                     </thead>
                     <tbody id="emi-summary-table-body"></tbody>
                 </table>
@@ -109,17 +107,17 @@
         </div>
     </div>
 
-    <h2>📋 Master Loan Registry</h2>
+    <h2>📋 Master Liabilities Registry (Loans & Private Debts)</h2>
     <div class="table-container" style="margin-bottom: 25px;">
         <table>
             <thead>
                 <tr>
                     <th>Borrower</th>
-                    <th>Lender Bank / Scheme</th>
+                    <th>Lender / Relationship Type</th>
                     <th>Sanctioned Amt</th>
-                    <th>Rate (ROI)</th>
-                    <th>Monthly EMI</th>
-                    <th>Paid / Remaining</th>
+                    <th>Rate / Terms</th>
+                    <th>Monthly Payout</th>
+                    <th>Tenure Status</th>
                     <th>Payment Status</th>
                 </tr>
             </thead>
@@ -148,46 +146,54 @@
 <script>
     /*************************************************************************
      * EASY UPDATE DATA CENTER
-     * Modify the items inside these brackets below to update your website dashboard instantly.
+     * Modify the entries inside these arrays to add/change future details.
      *************************************************************************/
 
     const incomeData = [
         { member: "Dad", source: "Monthly Salary", amount: 20000 },
         { member: "Dad", source: "House Rental Income", amount: 8000 },
-        { member: "Mom", source: "Monthly Salary", amount: 15000 }
-        // 💡 FUTURE ADDITION TEMPLATE: { member: "Name", source: "Alternative Income", amount: 5000 }
+        { member: "Mom", source: "Monthly Salary", amount: 15000 },
+        { member: "Mom", source: "Credit from Nanda Reddy", amount: 28000 },
+        { member: "Mom", source: "Credit from Venkat Rao (1)", amount: 3000 },
+        { member: "Mom", source: "Credit from Venkat Rao (2)", amount: 10500 }
     ];
 
     const loanData = [
-        { member: "Dad", bank: "Bajaj Finance", sanctioned: 832726, roi: "17.5%", emi: 23259, paidMonths: 17, totalMonths: 51 }, // 17 paid + 34 pending = 51 months
-        { member: "Mom", bank: "Axis Bank (CC Loan)", sanctioned: 100000, roi: "--", emi: 4000, paidMonths: 2, totalMonths: 36 }
-        // 💡 FUTURE ADDITION TEMPLATE: { member: "Dad/Mom", bank: "Bank Name", sanctioned: 50000, roi: "10%", emi: 2500, paidMonths: 0, totalMonths: 12 }
+        // DAD LOANS
+        { member: "Dad", lender: "Bajaj Finance", type: "EMI Loan", sanctioned: 832726, terms: "17.5% ROI", payout: 23259, tenureStr: "17 paid / 34 pending" },
+        
+        // MOM LOANS
+        { member: "Mom", lender: "Lalitha (Relative Vendor)", type: "EMI Loan", sanctioned: 300000, terms: "Starts July 2026", payout: 15000, tenureStr: "0 paid / 24 pending" },
+        { member: "Mom", lender: "Vishwanadham (Vendor)", type: "Interest Only", sanctioned: 500000, terms: "₹10k Int - ₹3k Rent Deduct", payout: 7000, tenureStr: "Interest Only" },
+        { member: "Mom", lender: "Anitha (Relative)", type: "Interest Only", sanctioned: 576000, terms: "₹2 Monthly Interest", payout: 11520, tenureStr: "Interest Only" }, // 576000 * 0.02 = 11520
+        { member: "Mom", lender: "Rajini", type: "Interest Only", sanctioned: 50000, terms: "Fixed Int Rate", payout: 1000, tenureStr: "Interest Only" },
+        { member: "Mom", lender: "Swarupa (Relative)", type: "Interest Only", sanctioned: 150000, terms: "₹2 Monthly Interest", payout: 3000, tenureStr: "Interest Only" },  // 150000 * 0.02 = 3000
+        { member: "Mom", lender: "Gaddam Supriya (Vendor)", type: "Interest Only", sanctioned: 300000, terms: "₹2 Monthly Interest", payout: 6000, tenureStr: "Interest Only" } // 300000 * 0.02 = 6000
     ];
 
     const creditCardData = [
         { member: "Dad", cardName: "Axis Bank Neo CC", limit: 57000, available: 54197 },
         { member: "Dad", cardName: "HDFC Pixel Play CC", limit: 53000, available: 16690 },
-        { member: "Mom", cardName: "Axis Neo & Flipkart (Combined)", limit: 17000, available: 17000 } // Assigned whole 17k limit as available, edit if utilized.
-        // 💡 FUTURE ADDITION TEMPLATE: { member: "Mom", cardName: "SBI SimplyClick", limit: 50000, available: 45000 }
+        { member: "Mom", cardName: "Axis Neo & Flipkart (Combined)", limit: 17000, available: 17000 }
     ];
 
 
     /*************************************************************************
-     * CORE CALCULATOR LOGIC ENGINE (Do not touch unless modifying structure)
+     * CORE CALCULATION RENDER ENGINE
      *************************************************************************/
     
     function initDashboard() {
         let totalIncome = 0;
-        let totalEmi = 0;
+        let totalOutflow = 0;
 
-        // Render Inflow Table
+        // Render Inflows Table
         const incomeBody = document.getElementById('income-table-body');
         incomeBody.innerHTML = incomeData.map(inc => {
             totalIncome += inc.amount;
             return `<tr><td><b>${inc.member}</b></td><td>${inc.source}</td><td style="color:var(--success); font-weight:600;">₹${inc.amount.toLocaleString('en-IN')}</td></tr>`;
         }).join('') + `<tr style="background:#f8fafc; font-weight:bold;"><td>Total Inflow</td><td>-</td><td style="color:var(--success)">₹${totalIncome.toLocaleString('en-IN')}</td></tr>`;
 
-        // Render Loan Master Registry & EMI Mini-Summary Table
+        // Render Loans and Financial Liabilities Outflow Summary
         const loansBody = document.getElementById('loans-table-body');
         const emiSummaryBody = document.getElementById('emi-summary-table-body');
         
@@ -195,33 +201,32 @@
         let emiSummaryHtml = '';
 
         loanData.forEach(loan => {
-            totalEmi += loan.emi;
-            let totalTenureMonths = loan.totalMonths;
+            totalOutflow += loan.payout;
             
             loansHtml += `
                 <tr>
                     <td><b>${loan.member}</b></td>
-                    <td>${loan.bank}</td>
+                    <td>${loan.lender}</td>
                     <td>₹${loan.sanctioned.toLocaleString('en-IN')}</td>
-                    <td>${loan.roi}</td>
-                    <td style="color:var(--danger); font-weight:600;">₹${loan.emi.toLocaleString('en-IN')}</td>
-                    <td><b>${loan.paidMonths}</b> paid / ${totalTenureMonths - loan.paidMonths} left</td>
+                    <td><span style="font-size:0.8rem; background:#edf2f7; padding:2px 6px; border-radius:4px;">${loan.terms}</span></td>
+                    <td style="color:var(--danger); font-weight:600;">₹${loan.payout.toLocaleString('en-IN')}</td>
+                    <td>${loan.tenureStr}</td>
                     <td><button class="btn-status btn-pending" onclick="toggleStatus(this)">❌ Pending</button></td>
                 </tr>`;
             
             emiSummaryHtml += `
                 <tr>
                     <td><b>${loan.member}</b></td>
-                    <td>${loan.bank}</td>
-                    <td style="color:var(--danger); font-weight:600;">₹${loan.emi.toLocaleString('en-IN')}</td>
-                    <td><progress value="${loan.paidMonths}" max="${totalTenureMonths}"></progress></td>
+                    <td>${loan.lender}</td>
+                    <td style="color:var(--danger); font-weight:600;">₹${loan.payout.toLocaleString('en-IN')}</td>
+                    <td><span style="font-size:0.75rem; font-weight:600; color:#4a5568;">${loan.type}</span></td>
                 </tr>`;
         });
 
         loansBody.innerHTML = loansHtml;
-        emiSummaryBody.innerHTML = emiSummaryHtml + `<tr style="background:#f8fafc; font-weight:bold;"><td>Total Liabilities</td><td>-</td><td style="color:var(--danger)">₹${totalEmi.toLocaleString('en-IN')}</td><td>-</td></tr>`;
+        emiSummaryBody.innerHTML = emiSummaryHtml + `<tr style="background:#f8fafc; font-weight:bold;"><td>Total Outflow</td><td>-</td><td style="color:var(--danger)">₹${totalOutflow.toLocaleString('en-IN')}</td><td>-</td></tr>`;
 
-        // Render Credit Cards Utilization Matrix
+        // Render Credit Cards Matrix Block
         const ccBody = document.getElementById('cc-table-body');
         ccBody.innerHTML = creditCardData.map(cc => {
             const outstanding = cc.limit - cc.available;
@@ -239,14 +244,19 @@
                 </tr>`;
         }).join('');
 
-        // Compute and post Net Balance Residual
-        const netSavings = totalIncome - totalEmi;
+        // Compute Balance Pool Left Over
+        const netSavings = totalIncome - totalOutflow;
         const savingsDiv = document.getElementById('net-savings');
         savingsDiv.innerText = `₹${netSavings.toLocaleString('en-IN')}`;
-        if(netSavings < 0) { savingsDiv.style.color = "var(--danger)"; }
+        if(netSavings < 0) { 
+            savingsDiv.style.color = "var(--danger)"; 
+            savingsDiv.nextElementSibling.innerText = "Warning: Outflows exceed visible monthly inflows!";
+        } else {
+            savingsDiv.style.color = "var(--success)";
+            savingsDiv.nextElementSibling.innerText = "Available cash balance safe room";
+        }
     }
 
-    // Toggle Payment Checklist Routine
     function toggleStatus(button) {
         if (button.classList.contains('btn-pending')) {
             button.classList.remove('btn-pending');
@@ -259,7 +269,6 @@
         }
     }
 
-    // Initialize layout on browser load
     window.onload = initDashboard;
 </script>
 
