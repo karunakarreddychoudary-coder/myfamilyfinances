@@ -33,6 +33,7 @@
         /* Cards */
         .card { background: var(--card-bg); padding: 18px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.04); border-left: 5px solid var(--primary); }
         .card.excellent { border-left-color: var(--success); }
+        .card.debt-box { border-left-color: var(--danger); }
         .card.savings { border-left-color: var(--info); }
         
         .card h3 { font-size: 0.85rem; text-transform: uppercase; color: #718096; margin-bottom: 5px; }
@@ -64,21 +65,40 @@
         <p>Clean automated architecture for budget, active loans, and credit limits</p>
     </header>
 
-    <div class="grid-3">
+    <div class="grid-3" style="margin-bottom: 15px;">
         <div class="card excellent">
-            <h3>Dad's Profile Overview</h3>
+            <h3>Dad's Credit Overview</h3>
             <div class="value">756 <span style="font-size:1rem; font-weight:normal; color:#718096;">CIBIL</span></div>
             <span class="status-badge">Excellent Health</span>
         </div>
         <div class="card excellent">
-            <h3>Mom's Profile Overview</h3>
+            <h3>Mom's Credit Overview</h3>
             <div class="value">761 <span style="font-size:1rem; font-weight:normal; color:#718096;">CIBIL</span></div>
             <span class="status-badge">Excellent Health</span>
         </div>
         <div class="card savings">
-            <h3>Net Monthly Cash Balance</h3>
-            <div class="value" id="net-savings" style="color: var(--info);">₹0</div>
-            <div class="subtext">Available after all EMIs/Interest are cleared</div>
+            <h3>Active Paid Cashflow (Net)</h3>
+            <div class="value" id="net-savings" style="color: var(--success);">₹0</div>
+            <div class="subtext">Inflow minus Bajaj EMI & Rent</div>
+        </div>
+    </div>
+
+    <h2>🚨 Total Accumulating Liability Book (Till Date)</h2>
+    <div class="grid-3">
+        <div class="card debt-box">
+            <h3>Total Principal Owed</h3>
+            <div class="value" id="total-principal" style="color: var(--danger);">₹0</div>
+            <div class="subtext">Base loan amounts combined</div>
+        </div>
+        <div class="card debt-box" style="border-left-color: var(--warning);">
+            <h3>Total Accumulated Interest Owed</h3>
+            <div class="value" id="total-interest" style="color: var(--warning); color: #d68910;">₹0</div>
+            <div class="subtext">Unpaid interest logs (Feb - Present)</div>
+        </div>
+        <div class="card debt-box" style="border-left-color: #9b59b6;">
+            <h3>Combined Grand Liability</h3>
+            <div class="value" id="grand-total-debt" style="color: #9b59b6;">₹0</div>
+            <div class="subtext">Total Principal + Total Interest</div>
         </div>
     </div>
 
@@ -95,11 +115,11 @@
             </div>
         </div>
         <div>
-            <h2>📉 Fixed Monthly Outflows (EMIs & Interest)</h2>
+            <h2>📉 Actively Paid Outflows</h2>
             <div class="table-container">
                 <table>
                     <thead>
-                        <tr><th>Borrower</th><th>Lender / Vendor</th><th>Monthly Payout</th><th>Type</th></tr>
+                        <tr><th>Borrower</th><th>Lender / Expense</th><th>Monthly Payout</th><th>Type</th></tr>
                     </thead>
                     <tbody id="emi-summary-table-body"></tbody>
                 </table>
@@ -114,11 +134,11 @@
                 <tr>
                     <th>Borrower</th>
                     <th>Lender / Relationship Type</th>
-                    <th>Sanctioned Amt</th>
-                    <th>Rate / Terms</th>
-                    <th>Monthly Payout</th>
+                    <th>Sanctioned Principal</th>
+                    <th>Rate/Terms</th>
+                    <th>Monthly Interest/EMI</th>
+                    <th>Accumulated Owed Int.</th>
                     <th>Tenure Status</th>
-                    <th>Payment Status</th>
                 </tr>
             </thead>
             <tbody id="loans-table-body"></tbody>
@@ -146,7 +166,6 @@
 <script>
     /*************************************************************************
      * EASY UPDATE DATA CENTER
-     * Modify the entries inside these arrays to add/change future details.
      *************************************************************************/
 
     const incomeData = [
@@ -158,17 +177,18 @@
         { member: "Mom", source: "Credit from Venkat Rao (2)", amount: 10500 }
     ];
 
+    // Added an isActivePaying field. False means interest accumulates over monthsElapse instead of impacting monthly ledger.
     const loanData = [
-        // DAD LOANS
-        { member: "Dad", lender: "Bajaj Finance", type: "EMI Loan", sanctioned: 832726, terms: "17.5% ROI", payout: 23259, tenureStr: "17 paid / 34 pending" },
+        { member: "Dad", lender: "Bajaj Finance", sanctioned: 832726, terms: "17.5% ROI", payout: 23259, tenureStr: "17 paid / 34 pending", isActivePaying: true, monthsElapse: 0, calcRate: 0 },
+        { member: "Dad", lender: "House Rent Deduction", sanctioned: 0, terms: "Home Rent Account", payout: 3000, tenureStr: "Monthly Fixed", isActivePaying: true, monthsElapse: 0, calcRate: 0 },
         
-        // MOM LOANS
-        { member: "Mom", lender: "Lalitha (Relative Vendor)", type: "EMI Loan", sanctioned: 300000, terms: "Starts July 2026", payout: 15000, tenureStr: "0 paid / 24 pending" },
-        { member: "Mom", lender: "Vishwanadham (Vendor)", type: "Interest Only", sanctioned: 500000, terms: "₹10k Int - ₹3k Rent Deduct", payout: 7000, tenureStr: "Interest Only" },
-        { member: "Mom", lender: "Anitha (Relative)", type: "Interest Only", sanctioned: 576000, terms: "₹2 Monthly Interest", payout: 11520, tenureStr: "Interest Only" }, // 576000 * 0.02 = 11520
-        { member: "Mom", lender: "Rajini", type: "Interest Only", sanctioned: 50000, terms: "Fixed Int Rate", payout: 1000, tenureStr: "Interest Only" },
-        { member: "Mom", lender: "Swarupa (Relative)", type: "Interest Only", sanctioned: 150000, terms: "₹2 Monthly Interest", payout: 3000, tenureStr: "Interest Only" },  // 150000 * 0.02 = 3000
-        { member: "Mom", lender: "Gaddam Supriya (Vendor)", type: "Interest Only", sanctioned: 300000, terms: "₹2 Monthly Interest", payout: 6000, tenureStr: "Interest Only" } // 300000 * 0.02 = 6000
+        // Unpaid accumulating entries (Interest builds up from Feb to June = 5 Months)
+        { member: "Mom", lender: "Lalitha (Relative Vendor)", sanctioned: 300000, terms: "Starts July 2026", payout: 15000, tenureStr: "0 paid / 24 pending", isActivePaying: false, monthsElapse: 1, calcRate: 0 },
+        { member: "Mom", lender: "Vishwanadham (Vendor)", sanctioned: 500000, terms: "Fixed ₹10k monthly", payout: 10000, tenureStr: "Interest Only", isActivePaying: false, monthsElapse: 5, calcRate: 0 },
+        { member: "Mom", lender: "Anitha (Relative)", sanctioned: 576000, terms: "₹2 Monthly Int (2%)", payout: 11520, tenureStr: "Interest Only", isActivePaying: false, monthsElapse: 5, calcRate: 0.02 }, 
+        { member: "Mom", lender: "Rajini", sanctioned: 50000, terms: "Fixed ₹1k monthly", payout: 1000, tenureStr: "Interest Only", isActivePaying: false, monthsElapse: 5, calcRate: 0 },
+        { member: "Mom", lender: "Swarupa (Relative)", sanctioned: 150000, terms: "₹2 Monthly Int (2%)", payout: 3000, tenureStr: "Interest Only", isActivePaying: false, monthsElapse: 5, calcRate: 0.02 },  
+        { member: "Mom", lender: "Gaddam Supriya (Vendor)", sanctioned: 300000, terms: "₹2 Monthly Int (2%)", payout: 6000, tenureStr: "Interest Only", isActivePaying: false, monthsElapse: 5, calcRate: 0.02 } 
     ];
 
     const creditCardData = [
@@ -184,7 +204,9 @@
     
     function initDashboard() {
         let totalIncome = 0;
-        let totalOutflow = 0;
+        let totalActiveOutflow = 0;
+        let totalPrincipalDebt = 0;
+        let totalAccumulatedInterest = 0;
 
         // Render Inflows Table
         const incomeBody = document.getElementById('income-table-body');
@@ -193,7 +215,7 @@
             return `<tr><td><b>${inc.member}</b></td><td>${inc.source}</td><td style="color:var(--success); font-weight:600;">₹${inc.amount.toLocaleString('en-IN')}</td></tr>`;
         }).join('') + `<tr style="background:#f8fafc; font-weight:bold;"><td>Total Inflow</td><td>-</td><td style="color:var(--success)">₹${totalIncome.toLocaleString('en-IN')}</td></tr>`;
 
-        // Render Loans and Financial Liabilities Outflow Summary
+        // Process Liabilities Tables
         const loansBody = document.getElementById('loans-table-body');
         const emiSummaryBody = document.getElementById('emi-summary-table-body');
         
@@ -201,7 +223,22 @@
         let emiSummaryHtml = '';
 
         loanData.forEach(loan => {
-            totalOutflow += loan.payout;
+            totalPrincipalDebt += loan.sanctioned;
+            
+            // Calculate accumulating interest over past months
+            let accruedInterestForThisLoan = loan.payout * loan.monthsElapse;
+            totalAccumulatedInterest += accruedInterestForThisLoan;
+
+            if (loan.isActivePaying) {
+                totalActiveOutflow += loan.payout;
+                emiSummaryHtml += `
+                    <tr>
+                        <td><b>${loan.member}</b></td>
+                        <td>${loan.lender}</td>
+                        <td style="color:var(--danger); font-weight:600;">₹${loan.payout.toLocaleString('en-IN')}</td>
+                        <td><span style="font-size:0.75rem; font-weight:600; color:#4a5568;">Active Monthly</span></td>
+                    </tr>`;
+            }
             
             loansHtml += `
                 <tr>
@@ -210,21 +247,13 @@
                     <td>₹${loan.sanctioned.toLocaleString('en-IN')}</td>
                     <td><span style="font-size:0.8rem; background:#edf2f7; padding:2px 6px; border-radius:4px;">${loan.terms}</span></td>
                     <td style="color:var(--danger); font-weight:600;">₹${loan.payout.toLocaleString('en-IN')}</td>
+                    <td style="color:#d68910; font-weight:600;">₹${accruedInterestForThisLoan.toLocaleString('en-IN')}</td>
                     <td>${loan.tenureStr}</td>
-                    <td><button class="btn-status btn-pending" onclick="toggleStatus(this)">❌ Pending</button></td>
-                </tr>`;
-            
-            emiSummaryHtml += `
-                <tr>
-                    <td><b>${loan.member}</b></td>
-                    <td>${loan.lender}</td>
-                    <td style="color:var(--danger); font-weight:600;">₹${loan.payout.toLocaleString('en-IN')}</td>
-                    <td><span style="font-size:0.75rem; font-weight:600; color:#4a5568;">${loan.type}</span></td>
                 </tr>`;
         });
 
         loansBody.innerHTML = loansHtml;
-        emiSummaryBody.innerHTML = emiSummaryHtml + `<tr style="background:#f8fafc; font-weight:bold;"><td>Total Outflow</td><td>-</td><td style="color:var(--danger)">₹${totalOutflow.toLocaleString('en-IN')}</td><td>-</td></tr>`;
+        emiSummaryBody.innerHTML = emiSummaryHtml + `<tr style="background:#f8fafc; font-weight:bold;"><td>Total Active Outflow</td><td>-</td><td style="color:var(--danger)">₹${totalActiveOutflow.toLocaleString('en-IN')}</td><td>-</td></tr>`;
 
         // Render Credit Cards Matrix Block
         const ccBody = document.getElementById('cc-table-body');
@@ -244,29 +273,14 @@
                 </tr>`;
         }).join('');
 
-        // Compute Balance Pool Left Over
-        const netSavings = totalIncome - totalOutflow;
-        const savingsDiv = document.getElementById('net-savings');
-        savingsDiv.innerText = `₹${netSavings.toLocaleString('en-IN')}`;
-        if(netSavings < 0) { 
-            savingsDiv.style.color = "var(--danger)"; 
-            savingsDiv.nextElementSibling.innerText = "Warning: Outflows exceed visible monthly inflows!";
-        } else {
-            savingsDiv.style.color = "var(--success)";
-            savingsDiv.nextElementSibling.innerText = "Available cash balance safe room";
-        }
-    }
+        // Top Summary Metric Calculations injection
+        document.getElementById('total-principal').innerText = `₹${totalPrincipalDebt.toLocaleString('en-IN')}`;
+        document.getElementById('total-interest').innerText = `₹${totalAccumulatedInterest.toLocaleString('en-IN')}`;
+        document.getElementById('grand-total-debt').innerText = `₹${(totalPrincipalDebt + totalAccumulatedInterest).toLocaleString('en-IN')}`;
 
-    function toggleStatus(button) {
-        if (button.classList.contains('btn-pending')) {
-            button.classList.remove('btn-pending');
-            button.classList.add('btn-paid');
-            button.innerHTML = '✅ Paid';
-        } else {
-            button.classList.remove('btn-paid');
-            button.classList.add('btn-pending');
-            button.innerHTML = '❌ Pending';
-        }
+        // Compute Balance Pool Left Over (Only deduct actively paid expenses)
+        const netSavings = totalIncome - totalActiveOutflow;
+        document.getElementById('net-savings').innerText = `₹${netSavings.toLocaleString('en-IN')}`;
     }
 
     window.onload = initDashboard;
