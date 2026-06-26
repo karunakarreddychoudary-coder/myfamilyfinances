@@ -173,13 +173,13 @@
         { member: "Dad", source: "House Rental Income", amount: 8000 },
         { member: "Mom", source: "Monthly Salary", amount: 15000 },
         { member: "Mom", source: "Credit from Nanda Reddy", amount: 28000 },
-        { member: "Mom", source: "Credit from Venkat Rao (1)", amount: 3000 },
+        { member: "Mom", source: "Credit from Venkat Rao (1)", amount: 4500 },
         { member: "Mom", source: "Credit from Venkat Rao (2)", amount: 10500 }
     ];
 
     // Added an isActivePaying field. False means interest accumulates over monthsElapse instead of impacting monthly ledger.
     const loanData = [
-        { member: "Dad", lender: "Bajaj Finance", sanctioned: 832726, terms: "17.5% ROI", payout: 23259, tenureStr: "17 paid / 34 pending", isActivePaying: true, monthsElapse: 0, calcRate: 0 },
+        { member: "Dad", lender: "Bajaj Finance personal loan", sanctioned: 832726, terms: "17.5% ROI", payout: 23259, tenureStr: "17 paid / 34 pending", isActivePaying: true, monthsElapse: 0, calcRate: 0 },
         { member: "Dad", lender: "House Rent Deduction", sanctioned: 0, terms: "Home Rent Account", payout: 3000, tenureStr: "Monthly Fixed", isActivePaying: true, monthsElapse: 0, calcRate: 0 },
         
         // Unpaid accumulating entries (Interest builds up from Feb to June = 5 Months)
