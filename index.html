@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Family Finance Dashboard</title>
+    <title>Family Finance Management Dashboard</title>
     <style>
         :root {
             --bg-color: #f4f6f9;
@@ -13,224 +13,240 @@
             --success: #2ecc71;
             --warning: #f1c40f;
             --danger: #e74c3c;
+            --info: #3498db;
             --border-color: #e2e8f0;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; }
+        .container { max-width: 1300px; margin: 0 auto; }
+        
+        header { margin-bottom: 25px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
+        header h1 { color: var(--primary); }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            padding: 20px;
-        }
+        h2 { margin: 25px 0 10px 0; color: var(--primary); font-size: 1.4rem; border-left: 4px solid var(--info); padding-left: 8px; }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        /* Grid Layouts */
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; margin-bottom: 25px; }
 
-        header {
-            margin-bottom: 30px;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 15px;
-        }
-
-        header h1 {
-            color: var(--primary);
-        }
-
-        /* Top Summary Cards Layout */
-        .summary-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            border-left: 5px solid var(--primary);
-        }
-
+        /* Cards */
+        .card { background: var(--card-bg); padding: 18px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.04); border-left: 5px solid var(--primary); }
         .card.excellent { border-left-color: var(--success); }
-        .card.total-outflow { border-left-color: #9b59b6; }
+        .card.income { border-left-color: var(--success); }
+        .card.expense { border-left-color: var(--danger); }
+        .card.savings { border-left-color: var(--info); }
+        
+        .card h3 { font-size: 0.85rem; text-transform: uppercase; color: #718096; margin-bottom: 5px; }
+        .card .value { font-size: 1.8rem; font-weight: bold; margin-bottom: 5px; }
+        .card .subtext { font-size: 0.8rem; color: #a0aec0; }
 
-        .card h3 {
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            color: #718096;
-            margin-bottom: 5px;
-        }
+        .status-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; color: white; background-color: var(--success); }
 
-        .score, .amount {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
+        /* Data Tables */
+        .table-container { background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.04); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
+        th { background-color: #f8fafc; color: #4a5568; padding: 12px 14px; font-weight: 600; border-bottom: 2px solid var(--border-color); white-space: nowrap; }
+        td { padding: 12px 14px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
+        tr:hover { background-color: #f8fafc; }
 
-        .status-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            color: white;
-        }
+        /* Status interactive button */
+        .btn-status { padding: 4px 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.75rem; }
+        .btn-pending { background-color: #ffeebe; color: #b7791f; }
+        .btn-paid { background-color: #def7ec; color: #03543f; }
 
-        .excellent .status-badge { background-color: var(--success); }
-
-        /* Table Layout */
-        .table-container {
-            background: var(--card-bg);
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            overflow-x: auto;
-            margin-top: 15px;
-            margin-bottom: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 0.9rem;
-        }
-
-        th {
-            background-color: #f8fafc;
-            color: #4a5568;
-            padding: 14px 16px;
-            font-weight: 600;
-            border-bottom: 2px solid var(--border-color);
-            white-space: nowrap;
-        }
-
-        td {
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--border-color);
-            white-space: nowrap;
-        }
-
-        tr:hover {
-            background-color: #f8fafc;
-        }
-
-        /* Interactive Action Button */
-        .btn-status {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.8rem;
-            transition: background 0.2s;
-        }
-
-        .btn-pending {
-            background-color: #ffeebe;
-            color: #b7791f;
-        }
-
-        .btn-paid {
-            background-color: #def7ec;
-            color: #03543f;
-        }
-
-        @media (max-width: 768px) {
-            body { padding: 10px; }
-        }
+        @media (max-width: 768px) { body { padding: 10px; } .grid-2 { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>Family Loan & Credit Dashboard</h1>
-        <p>Centralized tracking for family liabilities and credit scores</p>
+        <h1>Family Wealth & Liability Tracker</h1>
+        <p>Clean automated architecture for budget, active loans, and credit limits</p>
     </header>
 
-    <section class="summary-section">
+    <div class="grid-3">
         <div class="card excellent">
-            <h3>Dad's CIBIL Score</h3>
-            <div class="score">756</div>
-            <span class="status-badge">Excellent</span>
-            <p style="font-size: 0.8rem; color: #a0aec0; margin-top: 5px;">Updated: June 2026</p>
+            <h3>Dad's Profile Overview</h3>
+            <div class="value">756 <span style="font-size:1rem; font-weight:normal; color:#718096;">CIBIL</span></div>
+            <span class="status-badge">Excellent Health</span>
         </div>
-        
         <div class="card excellent">
-            <h3>Mom's CIBIL Score</h3>
-            <div class="score">761</div>
-            <span class="status-badge">Excellent</span>
-            <p style="font-size: 0.8rem; color: #a0aec0; margin-top: 5px;">Updated: June 2026</p>
+            <h3>Mom's Profile Overview</h3>
+            <div class="value">761 <span style="font-size:1rem; font-weight:normal; color:#718096;">CIBIL</span></div>
+            <span class="status-badge">Excellent Health</span>
         </div>
-
-        <div class="card total-outflow">
-            <h3>Total Monthly EMI</h3>
-            <div class="amount" style="color: #9b59b6;">₹27,239</div>
-            <p style="font-size: 0.8rem; color: #a0aec0; margin-top: 5px;">Combined Outflow</p>
+        <div class="card savings">
+            <h3>Net Monthly Cash Balance</h3>
+            <div class="value" id="net-savings" style="color: var(--info);">₹0</div>
+            <div class="subtext">Available after all EMIs are cleared</div>
         </div>
-    </section>
+    </div>
 
-    <h2>Master Loan & EMI Tracker</h2>
-    <div class="table-container">
+    <div class="grid-2">
+        <div>
+            <h2>💰 Monthly Inflows (Income)</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th>Earner</th><th>Source</th><th>Amount</th></tr>
+                    </thead>
+                    <tbody id="income-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+        <div>
+            <h2>📉 Fixed Monthly Outflows (EMIs)</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th>Borrower</th><th>Lender</th><th>EMI Due</th><th>Progress</th></tr>
+                    </thead>
+                    <tbody id="emi-summary-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <h2>📋 Master Loan Registry</h2>
+    <div class="table-container" style="margin-bottom: 25px;">
         <table>
             <thead>
                 <tr>
                     <th>Borrower</th>
-                    <th>Loan Type</th>
-                    <th>Lender Bank</th>
-                    <th>Total Sanctioned</th>
-                    <th>Outstanding Bal.</th>
-                    <th>ROI</th>
+                    <th>Lender Bank / Scheme</th>
+                    <th>Sanctioned Amt</th>
+                    <th>Rate (ROI)</th>
                     <th>Monthly EMI</th>
-                    <th>Due Date</th>
-                    <th>Auto-Debit From</th>
-                    <th>Tenure Left</th>
-                    <th>This Month Status</th>
+                    <th>Paid / Remaining</th>
+                    <th>Payment Status</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="loans-table-body"></tbody>
+        </table>
+    </div>
+
+    <h2>💳 Credit Card Accounts Summary</h2>
+    <div class="table-container">
+        <table>
+            <thead>
                 <tr>
-                    <td><b>Dad</b></td>
-                    <td>Personal Loan</td>
-                    <td>Bajaj Finance</td>
-                    <td>₹8,30,000</td>
-                    <td>₹8,30,000</td>
-                    <td>--</td>
-                    <td style="color: #e74c3c;"><b>₹23,239</b></td>
-                    <td>--</td>
-                    <td>Dad's A/c</td>
-                    <td>--</td>
-                    <td><button class="btn-status btn-pending" onclick="toggleStatus(this)">❌ Pending</button></td>
+                    <th>Cardholder</th>
+                    <th>Credit Card Account Name</th>
+                    <th>Total Limit</th>
+                    <th>Available Limit</th>
+                    <th>Current Due Outstanding</th>
+                    <th>Utilization</th>
                 </tr>
-                <tr>
-                    <td><b>Mom</b></td>
-                    <td>Credit Card Loan</td>
-                    <td>Axis Bank</td>
-                    <td>₹1,00,000</td>
-                    <td>₹1,00,000</td>
-                    <td>--</td>
-                    <td style="color: #e74c3c;"><b>₹4,000</b></td>
-                    <td>--</td>
-                    <td>Mom's A/c</td>
-                    <td>--</td>
-                    <td><button class="btn-status btn-pending" onclick="toggleStatus(this)">❌ Pending</button></td>
-                </tr>
-            </tbody>
+            </thead>
+            <tbody id="cc-table-body"></tbody>
         </table>
     </div>
 </div>
 
 <script>
-    // Handles clicking the Paid/Pending checklist button
+    /*************************************************************************
+     * EASY UPDATE DATA CENTER
+     * Modify the items inside these brackets below to update your website dashboard instantly.
+     *************************************************************************/
+
+    const incomeData = [
+        { member: "Dad", source: "Monthly Salary", amount: 20000 },
+        { member: "Dad", source: "House Rental Income", amount: 8000 },
+        { member: "Mom", source: "Monthly Salary", amount: 15000 }
+        // 💡 FUTURE ADDITION TEMPLATE: { member: "Name", source: "Alternative Income", amount: 5000 }
+    ];
+
+    const loanData = [
+        { member: "Dad", bank: "Bajaj Finance", sanctioned: 832726, roi: "17.5%", emi: 23259, paidMonths: 17, totalMonths: 51 }, // 17 paid + 34 pending = 51 months
+        { member: "Mom", bank: "Axis Bank (CC Loan)", sanctioned: 100000, roi: "--", emi: 4000, paidMonths: 2, totalMonths: 36 }
+        // 💡 FUTURE ADDITION TEMPLATE: { member: "Dad/Mom", bank: "Bank Name", sanctioned: 50000, roi: "10%", emi: 2500, paidMonths: 0, totalMonths: 12 }
+    ];
+
+    const creditCardData = [
+        { member: "Dad", cardName: "Axis Bank Neo CC", limit: 57000, available: 54197 },
+        { member: "Dad", cardName: "HDFC Pixel Play CC", limit: 53000, available: 16690 },
+        { member: "Mom", cardName: "Axis Neo & Flipkart (Combined)", limit: 17000, available: 17000 } // Assigned whole 17k limit as available, edit if utilized.
+        // 💡 FUTURE ADDITION TEMPLATE: { member: "Mom", cardName: "SBI SimplyClick", limit: 50000, available: 45000 }
+    ];
+
+
+    /*************************************************************************
+     * CORE CALCULATOR LOGIC ENGINE (Do not touch unless modifying structure)
+     *************************************************************************/
+    
+    function initDashboard() {
+        let totalIncome = 0;
+        let totalEmi = 0;
+
+        // Render Inflow Table
+        const incomeBody = document.getElementById('income-table-body');
+        incomeBody.innerHTML = incomeData.map(inc => {
+            totalIncome += inc.amount;
+            return `<tr><td><b>${inc.member}</b></td><td>${inc.source}</td><td style="color:var(--success); font-weight:600;">₹${inc.amount.toLocaleString('en-IN')}</td></tr>`;
+        }).join('') + `<tr style="background:#f8fafc; font-weight:bold;"><td>Total Inflow</td><td>-</td><td style="color:var(--success)">₹${totalIncome.toLocaleString('en-IN')}</td></tr>`;
+
+        // Render Loan Master Registry & EMI Mini-Summary Table
+        const loansBody = document.getElementById('loans-table-body');
+        const emiSummaryBody = document.getElementById('emi-summary-table-body');
+        
+        let loansHtml = '';
+        let emiSummaryHtml = '';
+
+        loanData.forEach(loan => {
+            totalEmi += loan.emi;
+            let totalTenureMonths = loan.totalMonths;
+            
+            loansHtml += `
+                <tr>
+                    <td><b>${loan.member}</b></td>
+                    <td>${loan.bank}</td>
+                    <td>₹${loan.sanctioned.toLocaleString('en-IN')}</td>
+                    <td>${loan.roi}</td>
+                    <td style="color:var(--danger); font-weight:600;">₹${loan.emi.toLocaleString('en-IN')}</td>
+                    <td><b>${loan.paidMonths}</b> paid / ${totalTenureMonths - loan.paidMonths} left</td>
+                    <td><button class="btn-status btn-pending" onclick="toggleStatus(this)">❌ Pending</button></td>
+                </tr>`;
+            
+            emiSummaryHtml += `
+                <tr>
+                    <td><b>${loan.member}</b></td>
+                    <td>${loan.bank}</td>
+                    <td style="color:var(--danger); font-weight:600;">₹${loan.emi.toLocaleString('en-IN')}</td>
+                    <td><progress value="${loan.paidMonths}" max="${totalTenureMonths}"></progress></td>
+                </tr>`;
+        });
+
+        loansBody.innerHTML = loansHtml;
+        emiSummaryBody.innerHTML = emiSummaryHtml + `<tr style="background:#f8fafc; font-weight:bold;"><td>Total Liabilities</td><td>-</td><td style="color:var(--danger)">₹${totalEmi.toLocaleString('en-IN')}</td><td>-</td></tr>`;
+
+        // Render Credit Cards Utilization Matrix
+        const ccBody = document.getElementById('cc-table-body');
+        ccBody.innerHTML = creditCardData.map(cc => {
+            const outstanding = cc.limit - cc.available;
+            const utilizationPercent = cc.limit > 0 ? ((outstanding / cc.limit) * 100).toFixed(1) : 0;
+            let alertColor = utilizationPercent > 30 ? 'color: var(--danger); font-weight:bold;' : 'color: var(--success);';
+
+            return `
+                <tr>
+                    <td><b>${cc.member}</b></td>
+                    <td>${cc.cardName}</td>
+                    <td>₹${cc.limit.toLocaleString('en-IN')}</td>
+                    <td>₹${cc.available.toLocaleString('en-IN')}</td>
+                    <td style="font-weight:600;">₹${outstanding.toLocaleString('en-IN')}</td>
+                    <td style="${alertColor}">${utilizationPercent}%</td>
+                </tr>`;
+        }).join('');
+
+        // Compute and post Net Balance Residual
+        const netSavings = totalIncome - totalEmi;
+        const savingsDiv = document.getElementById('net-savings');
+        savingsDiv.innerText = `₹${netSavings.toLocaleString('en-IN')}`;
+        if(netSavings < 0) { savingsDiv.style.color = "var(--danger)"; }
+    }
+
+    // Toggle Payment Checklist Routine
     function toggleStatus(button) {
         if (button.classList.contains('btn-pending')) {
             button.classList.remove('btn-pending');
@@ -242,6 +258,9 @@
             button.innerHTML = '❌ Pending';
         }
     }
+
+    // Initialize layout on browser load
+    window.onload = initDashboard;
 </script>
 
 </body>
